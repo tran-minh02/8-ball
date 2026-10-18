@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <radialGradient id="sphereGrad" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="15%" stop-color="#1e293b" />
+      <stop offset="55%" stop-color="#090b10" />
+      <stop offset="90%" stop-color="#000000" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </radialGradient>
+    <radialGradient id="innerCircle" cx="38%" cy="32%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="65%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </radialGradient>
+    <linearGradient id="glowRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Dark Rounded Canvas -->
+  <rect width="192" height="192" rx="42" fill="#030712" />
+
+  <!-- Ambient Glow -->
+  <circle cx="96" cy="96" r="82" fill="none" stroke="url(#glowRing)" stroke-width="3" filter="drop-shadow(0 0 12px #3b82f6)" />
+
+  <!-- 3D Outer Sphere -->
+  <circle cx="96" cy="96" r="76" fill="url(#sphereGrad)" />
+
+  <!-- Top-left Specular Gloss -->
+  <ellipse cx="68" cy="52" rx="28" ry="16" transform="rotate(-28 68 52)" fill="rgba(255,255,255,0.22)" />
+
+  <!-- White Center Badge -->
+  <circle cx="96" cy="96" r="38" fill="url(#innerCircle)" />
+
+  <!-- Number 8 -->
+  <text x="96" y="113" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="52" text-anchor="middle" fill="#090b10" letter-spacing="-2">8</text>
+</svg>
