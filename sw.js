@@ -1,5 +1,4 @@
-// Magic 8-Ball Classic Service Worker (100% Offline PWA)
-const CACHE_NAME = 'classic-8ball-v1.6';
+const CACHE_NAME = 'classic-8ball-v1.8';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

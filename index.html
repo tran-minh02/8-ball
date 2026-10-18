@@ -1173,12 +1173,6 @@
                 </div>
             </div>
 
-            <!-- Mind Prompt Pill inside Header -->
-            <div
-                class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full glass-panel border border-indigo-500/30 text-[11px] text-indigo-200 font-sans shadow-sm pointer-events-none select-none">
-                <i class="ph ph-sparkle text-amber-400 animate-pulse shrink-0"></i>
-                <span>Nghĩ thầm câu hỏi Có/Không rồi lắc quả cầu</span>
-            </div>
 
             <!-- Quick Action Buttons -->
             <div class="flex items-center gap-1.5 sm:gap-2">
@@ -1227,12 +1221,6 @@
         <i class="ph ph-caret-down text-xs text-blue-400 group-hover:translate-y-0.5 transition-transform"></i>
     </button>
 
-    <!-- Top Bar Centered Mind Prompt Pill (Never blocks the ball or satellites) -->
-    <div id="topbar-mind-prompt"
-        class="fixed top-2.5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full glass-panel border border-indigo-500/30 text-[10px] sm:text-xs text-indigo-200 font-sans shadow-xl shadow-indigo-500/10 pointer-events-none select-none transition-all duration-300">
-        <i class="ph ph-sparkle text-amber-400 animate-pulse shrink-0"></i>
-        <span>Nghĩ thầm câu hỏi Có/Không rồi lắc quả cầu</span>
-    </div>
 
     <!-- ==================== MAIN GAMEPLAY WORKSPACE ==================== -->
     <main id="main-stage" class="relative flex-1 w-full max-w-2xl mx-auto flex items-center justify-center">
@@ -1366,7 +1354,7 @@
                                     </div>
                                     <div id="sat-hash-display"
                                         class="text-[9px] text-slate-300 break-all bg-black/60 p-2 rounded-lg border border-white/10 font-mono select-all leading-relaxed">
-                                        e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                                        Đang tạo Genesis Entropy Seed...
                                     </div>
                                     <div class="mt-1.5 text-[8.5px] text-slate-400 flex items-center justify-between">
                                         <span class="flex items-center gap-1 text-cyan-400"><i class="ph ph-shield-check text-xs"></i><span>Provably Fair Entropy</span></span>
@@ -1718,6 +1706,25 @@
             } catch (e) { }
         }
 
+        function playPentatonicSparkChime(freq, vol = 0.08) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(vol, now + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.24);
+            } catch (e) { }
+        }
         // ==================== HAPTIC VIBRATION ====================
         function triggerHapticFeedback(pattern) {
             if (!hapticsEnabled || !navigator.vibrate) return;
@@ -2160,16 +2167,12 @@
                     expandBtn.classList.remove('hidden');
                     expandBtn.classList.add('flex');
                 }
-                const topPrompt = document.getElementById('topbar-mind-prompt');
-                if (topPrompt) topPrompt.style.opacity = '1';
             } else {
                 header.classList.remove('collapsed-header');
                 if (expandBtn) {
                     expandBtn.classList.add('hidden');
                     expandBtn.classList.remove('flex');
                 }
-                const topPrompt = document.getElementById('topbar-mind-prompt');
-                if (topPrompt) topPrompt.style.opacity = '0';
             }
             triggerHapticFeedback('tap');
         }
@@ -2238,27 +2241,41 @@
 
             if (satOrb) satOrb.classList.add('active-beacon');
 
-            // 2. Smart Boundary Positioning relative to satellite orb
-            const orbRect = satOrb.getBoundingClientRect();
-            const spaceRight = window.innerWidth - orbRect.right;
-            const spaceBottom = window.innerHeight - orbRect.bottom;
-
-            // Horizontal position: default to right of orb (like hash box), flip to left if near right edge
-            if (spaceRight < 290) {
-                card.style.right = 'calc(100% + 12px)';
-                card.style.left = 'auto';
-            } else {
-                card.style.left = 'calc(100% + 12px)';
+            // 2. Smart Boundary Positioning relative to satellite orb / mobile screen
+            if (window.innerWidth < 640) {
+                // Mobile screen: Anchor centered at bottom without overflowing
+                card.style.position = 'fixed';
+                card.style.left = '50%';
                 card.style.right = 'auto';
-            }
-
-            // Vertical position: adjust if near bottom
-            if (spaceBottom < 170) {
-                card.style.bottom = '-8px';
+                card.style.bottom = '16px';
                 card.style.top = 'auto';
+                card.style.transform = 'translateX(-50%)';
+                card.style.width = 'calc(100vw - 32px)';
+                card.style.maxWidth = '340px';
             } else {
-                card.style.top = '-8px';
-                card.style.bottom = 'auto';
+                card.style.position = 'absolute';
+                card.style.transform = 'none';
+                card.style.width = '';
+                card.style.maxWidth = '';
+                const orbRect = satOrb.getBoundingClientRect();
+                const spaceRight = window.innerWidth - orbRect.right;
+                const spaceBottom = window.innerHeight - orbRect.bottom;
+
+                if (spaceRight < 290) {
+                    card.style.right = 'calc(100% + 12px)';
+                    card.style.left = 'auto';
+                } else {
+                    card.style.left = 'calc(100% + 12px)';
+                    card.style.right = 'auto';
+                }
+
+                if (spaceBottom < 170) {
+                    card.style.bottom = '-8px';
+                    card.style.top = 'auto';
+                } else {
+                    card.style.top = '-8px';
+                    card.style.bottom = 'auto';
+                }
             }
 
             // 3. Reveal popover frame
@@ -2510,6 +2527,13 @@
 
                     anim.onfinish = () => {
                         star.remove();
+                        // Ascending pentatonic chime on each arriving cosmic star
+                        const pentatonicScale = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51, 1567.98, 1760.00, 2093.00, 2349.32, 2637.02, 3135.96];
+                        const noteFreq = pentatonicScale[i % pentatonicScale.length];
+                        playPentatonicSparkChime(noteFreq, 0.05 + (i / numStars) * 0.055);
+                        if (navigator.vibrate && (i % 2 === 0 || i === numStars - 1)) {
+                            try { navigator.vibrate(10); } catch (e) { }
+                        }
                     };
                 }, i * 35);
             }
@@ -2537,22 +2561,38 @@
             }, 750);
         }
 
+        function generateGenesisEntropyHash() {
+            const arr = new Uint8Array(32);
+            if (window.crypto && window.crypto.getRandomValues) {
+                window.crypto.getRandomValues(arr);
+            } else {
+                for (let i = 0; i < 32; i++) arr[i] = Math.floor(Math.random() * 256);
+            }
+            // Mix dynamic environmental entropy (timestamp, perf timer, screen size)
+            const seedStr = `GENESIS_${Date.now()}_${performance.now()}_${window.innerWidth}x${window.innerHeight}_${Math.random()}`;
+            const enc = new TextEncoder().encode(seedStr);
+            for (let i = 0; i < enc.length && i < 32; i++) {
+                arr[i] = (arr[i] ^ enc[i]) & 0xff;
+            }
+            return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         async function initInitialEntropy() {
             try {
-                const array = new Uint32Array(1);
-                window.crypto.getRandomValues(array);
-                const seed = `INITIAL_GENESIS_${Date.now()}_${array[0]}`;
-                const msgBuffer = new TextEncoder().encode(seed);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const initHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                updateHashDisplay(initHash);
-                // Energy initializes randomly from 1-50
+                if (window.crypto && window.crypto.subtle) {
+                    const seed = `INITIAL_GENESIS_${Date.now()}_${performance.now()}_${Math.random()}`;
+                    const msgBuffer = new TextEncoder().encode(seed);
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const initHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    updateHashDisplay(initHash);
+                } else {
+                    updateHashDisplay(generateGenesisEntropyHash());
+                }
                 const initialEnergy = Math.floor(Math.random() * 50) + 1;
                 updateEnergyDisplay(initialEnergy);
             } catch (e) {
-                const fallbackHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-                updateHashDisplay(fallbackHash);
+                updateHashDisplay(generateGenesisEntropyHash());
                 const initialEnergy = Math.floor(Math.random() * 50) + 1;
                 updateEnergyDisplay(initialEnergy);
             }
@@ -2738,62 +2778,66 @@
 
 
         let activeStars = [];
-        const MAX_STARS = 7;
+        const isMobileScreen = window.innerWidth < 768 || ('ontouchstart' in window);
+        const MAX_STARS = isMobileScreen ? 3 : 6;
         let mouseGravity = { x: -9999, y: -9999, active: false };
         let tiltGravity = { x: 0, y: 0 };
+        let cachedStageRect = { left: 0, top: 0, width: 400, height: 400, centerX: 200, centerY: 200 };
+
+        function updateStageRectCache() {
+            const mainStage = document.getElementById('main-stage');
+            if (!mainStage) return;
+            const r = mainStage.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0) {
+                cachedStageRect = {
+                    left: r.left,
+                    top: r.top,
+                    width: r.width,
+                    height: r.height,
+                    centerX: r.width / 2,
+                    centerY: r.height / 2
+                };
+            }
+        }
 
         function initWhisperingStars() {
             const container = document.getElementById('whispering-stars-container');
             const mainStage = document.getElementById('main-stage');
             if (!container || !mainStage) return;
 
-            // Mouse tracking on main stage
-            mainStage.addEventListener('mousemove', (e) => {
-                const rect = mainStage.getBoundingClientRect();
-                mouseGravity.x = e.clientX - rect.left;
-                mouseGravity.y = e.clientY - rect.top;
-                mouseGravity.active = true;
-            });
-            mainStage.addEventListener('mouseleave', () => {
-                mouseGravity.active = false;
-            });
+            updateStageRectCache();
+            window.addEventListener('resize', updateStageRectCache, { passive: true });
+            window.addEventListener('scroll', updateStageRectCache, { passive: true });
 
-            // Touch tracking on mobile
-            mainStage.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 0) {
-                    const rect = mainStage.getBoundingClientRect();
-                    mouseGravity.x = e.touches[0].clientX - rect.left;
-                    mouseGravity.y = e.touches[0].clientY - rect.top;
+            // Desktop Mouse tracking on main stage (Cached rect, zero layout thrashing)
+            if (!isMobileScreen) {
+                mainStage.addEventListener('mousemove', (e) => {
+                    mouseGravity.x = e.clientX - cachedStageRect.left;
+                    mouseGravity.y = e.clientY - cachedStageRect.top;
                     mouseGravity.active = true;
-                }
-            }, { passive: true });
+                });
+                mainStage.addEventListener('mouseleave', () => {
+                    mouseGravity.active = false;
+                });
+            }
 
-            mainStage.addEventListener('touchmove', (e) => {
-                if (e.touches.length > 0) {
-                    const rect = mainStage.getBoundingClientRect();
-                    mouseGravity.x = e.touches[0].clientX - rect.left;
-                    mouseGravity.y = e.touches[0].clientY - rect.top;
-                    mouseGravity.active = true;
-                }
-            }, { passive: true });
-
-            mainStage.addEventListener('touchend', () => {
-                mouseGravity.active = false;
-            });
-
-            // Gyroscope tilt on mobile
+            // Gyroscope tilt on mobile (Throttled to 30Hz for zero lag)
+            let lastGyroTime = 0;
             if (window.DeviceOrientationEvent) {
                 window.addEventListener('deviceorientation', (e) => {
+                    const now = Date.now();
+                    if (now - lastGyroTime < 32) return;
+                    lastGyroTime = now;
                     if (e.gamma !== null && e.beta !== null) {
-                        tiltGravity.x = Math.max(-1, Math.min(1, e.gamma / 45)) * 0.08;
-                        tiltGravity.y = Math.max(-1, Math.min(1, (e.beta - 30) / 45)) * 0.08;
+                        tiltGravity.x = Math.max(-1, Math.min(1, e.gamma / 45)) * 0.06;
+                        tiltGravity.y = Math.max(-1, Math.min(1, (e.beta - 30) / 45)) * 0.06;
                     }
                 }, { passive: true });
             }
 
-            // Spawn initial stars with staggered timers
+            // Spawn initial stars with staggered timers (3 on mobile, 6 on desktop)
             for (let i = 0; i < MAX_STARS; i++) {
-                setTimeout(() => spawnStar(container, mainStage), i * 650);
+                setTimeout(() => spawnStar(container, mainStage), i * 750);
             }
 
             // Start 60fps Physics & Gravity loop
@@ -2932,21 +2976,22 @@
 
         function spawnStar(container, mainStage) {
             if (!container || !mainStage) return;
-            const stageRect = mainStage.getBoundingClientRect();
-            const width = stageRect.width || 400;
-            const height = stageRect.height || 400;
-            const centerX = width / 2;
-            const centerY = height / 2;
+            if (activeStars.length >= MAX_STARS) return;
+            const width = cachedStageRect.width || 400;
+            const height = cachedStageRect.height || 400;
+            const centerX = cachedStageRect.centerX || (width / 2);
+            const centerY = cachedStageRect.centerY || (height / 2);
 
             // Find valid random coordinates avoiding central 8-Ball
             let x, y, dist;
             let attempts = 0;
+            const minCenterDist = isMobileScreen ? 115 : 155;
             do {
-                x = 35 + Math.random() * (width - 70);
-                y = 35 + Math.random() * (height - 70);
+                x = 30 + Math.random() * (width - 60);
+                y = 30 + Math.random() * (height - 60);
                 dist = Math.hypot(x - centerX, y - centerY);
                 attempts++;
-            } while (dist < 155 && attempts < 25);
+            } while (dist < minCenterDist && attempts < 25);
 
             const quote = getNextWhisper();
             const starEl = document.createElement('div');
@@ -2968,7 +3013,7 @@
                     <p class="whisper-pill-text">${quote.text}</p>
                     <div class="whisper-pill-hint">
                         <i class="ph ph-lightning text-amber-400"></i>
-                        <span>Thả tay để thu nạp năng lượng ⚡ +1~5</span>
+                        <span>Chạm để thu nạp năng lượng ⚡ +1~5</span>
                     </div>
                 </div>
             `;
@@ -3033,6 +3078,15 @@
                     onRelease(e);
                 }
             });
+
+            // Instant tap-to-catch for mobile touchscreens
+            starEl.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                if (!starData.isCaught && !starData.isAbsorbing) {
+                    onCatch(e);
+                    setTimeout(() => onRelease(e), 100);
+                }
+            }, { passive: true });
 
             activeStars.push(starData);
 
@@ -3113,11 +3167,10 @@
             const container = document.getElementById('whispering-stars-container');
 
             if (mainStage && container) {
-                const stageRect = mainStage.getBoundingClientRect();
-                const width = stageRect.width || 400;
-                const height = stageRect.height || 400;
-                const centerX = width / 2;
-                const centerY = height / 2;
+                const width = cachedStageRect.width || 400;
+                const height = cachedStageRect.height || 400;
+                const centerX = cachedStageRect.centerX || (width / 2);
+                const centerY = cachedStageRect.centerY || (height / 2);
                 const now = Date.now();
 
                 // 1. Central 8-Ball Spring Damped Physics
@@ -3217,8 +3270,8 @@
 
                     star.time += star.twinkleSpeed;
 
-                    // Mouse Gravitational Attraction
-                    if (mouseGravity.active) {
+                    // Mouse Gravitational Attraction (Desktop only to prevent mobile touch suction lag)
+                    if (!isMobileScreen && mouseGravity.active) {
                         const dx = mouseGravity.x - star.x;
                         const dy = mouseGravity.y - star.y;
                         const distSq = dx * dx + dy * dy;
@@ -3236,12 +3289,14 @@
                     star.vx += tiltGravity.x;
                     star.vy += tiltGravity.y;
 
-                    // Central 8-Ball Repulsion (keeps safe distance from ball)
+                    // Central 8-Ball Repulsion (Scaled for mobile viewport)
+                    const minBallDist = isMobileScreen ? 115 : 150;
+                    const pushForce = isMobileScreen ? 0.36 : 0.48;
                     const dxBall = star.x - (centerX + ballPhysics.x);
                     const dyBall = star.y - (centerY + ballPhysics.y);
                     const distBall = Math.hypot(dxBall, dyBall);
-                    if (distBall < 150 && distBall > 5) {
-                        const push = (1 - distBall / 150) * 0.48;
+                    if (distBall < minBallDist && distBall > 5) {
+                        const push = (1 - distBall / minBallDist) * pushForce;
                         star.vx += (dxBall / distBall) * push;
                         star.vy += (dyBall / distBall) * push;
                     }
@@ -3258,9 +3313,9 @@
                     if (star.y < 30) { star.y = 30; star.vy *= -0.6; }
                     if (star.y > height - 30) { star.y = height - 30; star.vy *= -0.6; }
 
-                    // Micro comet-trail update based on speed & gravity
+                    // Micro comet-trail update (Desktop only, saves mobile DOM style mutations)
                     const trail = star.el.querySelector('.whisper-trail');
-                    if (trail) {
+                    if (trail && !isMobileScreen) {
                         const speed = Math.hypot(star.vx, star.vy);
                         if (speed > 0.35 && mouseGravity.active) {
                             const angle = Math.atan2(-star.vy, -star.vx);
@@ -3279,15 +3334,15 @@
                     star.el.style.transform = `translate3d(${star.x.toFixed(1)}px, ${star.y.toFixed(1)}px, 0)`;
                 }
 
-                // 4. Micro-elastic pull on 4 satellites when mouse is near
-                const satelliteEls = document.querySelectorAll('.satellite-orb');
-                satelliteEls.forEach(orb => {
-                    if (orb === satDragState.activeOrb || orb === satDragState.reboundingOrb) return;
-                    if (orb.closest('.paused-orbit')) return;
-                    if (mouseGravity.active) {
+                // 4. Micro-elastic pull on 4 satellites when mouse is near (Desktop only, eliminates 240 forced reflows/sec on mobile)
+                if (!isMobileScreen && mouseGravity.active) {
+                    const satelliteEls = document.querySelectorAll('.satellite-orb');
+                    satelliteEls.forEach(orb => {
+                        if (orb === satDragState.activeOrb || orb === satDragState.reboundingOrb) return;
+                        if (orb.closest('.paused-orbit')) return;
                         const orbRect = orb.getBoundingClientRect();
-                        const orbStageX = orbRect.left - stageRect.left + orbRect.width / 2;
-                        const orbStageY = orbRect.top - stageRect.top + orbRect.height / 2;
+                        const orbStageX = orbRect.left - cachedStageRect.left + orbRect.width / 2;
+                        const orbStageY = orbRect.top - cachedStageRect.top + orbRect.height / 2;
                         const dx = mouseGravity.x - orbStageX;
                         const dy = mouseGravity.y - orbStageY;
                         const dist = Math.hypot(dx, dy);
@@ -3299,10 +3354,8 @@
                         } else {
                             orb.style.translate = '0px 0px';
                         }
-                    } else {
-                        orb.style.translate = '0px 0px';
-                    }
-                });
+                    });
+                }
             }
 
             requestAnimationFrame(runCosmicPhysicsLoop);
