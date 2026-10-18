@@ -1,6 +1,5 @@
-# 🎱 Magic 8-Ball Classic (Bản Cổ Điển Không AI)
-
-Ứng dụng Quả Cầu Số 8 Tiên Tri theo chuẩn cơ học cổ điển, **100% Client-Side**, không cần máy chủ AI, không cần API Key, hoạt động ngoại tuyến và hỗ trợ cài đặt Progressive Web App (PWA).
+# 🎱 Magic 8-Ball Classic
+Ứng dụng Quả Cầu Số 8 Tiên Tri theo chuẩn cơ học cổ điển, **100% Client-Side**, và hỗ trợ cài đặt Progressive Web App (PWA).
 
 ---
 
@@ -15,34 +14,6 @@
 - **Âm Thanh Mô Phỏng (Procedural Web Audio)**: Tiếng sóng sánh chất lỏng và hợp âm ngân vang khi hiện kết quả.
 - **2 Giao Diện Cao Cấp**: Obsidian Glass sang trọng & Cyber-Terminal CRT phong cách hacker.
 - **Tiêu Chuẩn PWA**: Chạy toàn màn hình (Standalone) không thanh URL như app native iOS/Android, hỗ trợ chơi Offline khi mất mạng.
-
----
-
-## 🚀 Hướng Dẫn Deploy Lên GitHub Pages Trong 2 Phút
-
-### Cách 1: Đẩy bằng Dòng Lệnh Git (Khuyên Dùng)
-
-Mở Terminal / PowerShell ngay trong thư mục `classic-8-ball`:
-
-```bash
-# 1. Khởi tạo kho git
-git init
-
-# 2. Thêm tất cả tệp
-git add .
-
-# 3. Tạo commit
-git commit -m "Phát hành bản Magic 8-Ball Classic PWA"
-
-# 4. Đổi tên nhánh chính
-git branch -M main
-
-# 5. Thêm địa chỉ kho GitHub của bạn (thay bằng link repo của bạn)
-git remote add origin https://github.com/<ten-tai-khoan>/<ten-repo>.git
-
-# 6. Đẩy code lên GitHub
-git push -u origin main
-```
 
 ---
 
